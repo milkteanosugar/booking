@@ -1,108 +1,136 @@
-import React, {Component} from 'react';
+import React,{useState} from "react";
 import { withRouter } from 'react-router';
-import {Link} from 'react-router-dom';
-
-import 'antd/dist/antd.css';
-import { Form, Input, Button, Select } from 'antd';
-
 import Navbar from '../navbar';
-import map from './map.jpg';
 
+import { Calendar,Table, Select } from 'antd';
+import hours from './hours.js';
+import roomData from './room.js';
+
+//get date avaiable
 const { Option } = Select;
+const buildingData = Object.keys(roomData)
+console.log(buildingData)
 
-const myStyle ={
-    width:"30%",
-    float: "left",
-    margin:'150px 100px 0 0'
+class Selections extends React.Component{
+    state = {
+        buildings:roomData[buildingData[0]],
+        rooms:roomData[buildingData[0]][0],
+    }
+
+  handleBuildingChange = value => {
+    this.setState({
+      buildings: roomData[value],
+      rooms: roomData[value][0],
+    });
+  };
+
+  onRoomChange = value => {
+    this.setState({
+      rooms: value,
+    });
+  };
+
+  render() {
+    const { buildings } = this.state;
+    return (
+      <>
+        <Select
+          defaultValue={buildingData[0]}
+          style={{ width: 120 }}
+          onChange={this.handleBuildingChange}
+        >
+          {buildingData.map(building => (
+            <Option key={building}>{building}</Option>
+          ))}
+        </Select>
+        <Select
+          style={{ width: 120 }}
+          value={this.state.rooms}
+          onChange={this.onRoomChange}
+        >
+          {buildings.map(room => (
+            <Option key={room}>{room}</Option>
+          ))}
+        </Select>
+      </>
+    );
+  }
 
 }
 
-const layout = {
 
-  labelCol: {
-    span: 5,
-    width:20,
+//get daily seat avaialbe
+const columns = [
+  {
+    title: 'Hour',
+    dataIndex: 'Hour',
   },
-  wrapperCol: {
-    span: 16,
+  {
+    title: 'Available',
+    dataIndex: 'Available',
   },
+
+];
+
+
+const rowSelection = {
+  onChange: (selectedRowHours, selectedRows) => {
+    console.log(`selectedRowHours: ${selectedRowHours}`, 'selectedRows: ', selectedRows);
+  },
+  getCheckboxProps: record => ({
+    disabled: record.Available === 0, // Column configuration not to be checked
+    name: record.name,
+  }),
 };
 
 const Demo = () => {
-//  const onFinish = values => {
-//    console.log('Success:', values);
-//  };
-//
-//  const onFinishFailed = errorInfo => {
-//    console.log('Failed:', errorInfo);
-//  };
+  const [selectionType, setSelectionType] = useState('checkbox');
 
   return (
-  <div class = 'demoForm' style = {myStyle}>
-  <h2 style={{margin:'0 0 20px 150px'}}>Reserve a Class Room</h2>
-  <Form
-      {...layout}
-      name="basic"
-      initialValues={{
-        remember: true,
-      }}
-//      onFinish={onFinish}
-//      onFinishFailed={onFinishFailed}
-      >
-      <Form.Item
-        label="Building"
-        name="Building"
-      >
-          <Select defaultValue="" >
-              <Option value="AQ">AQ</Option>
-              <Option value="ABS">ABS</Option>
-              <Option value="BLU">BLU</Option>
-          </Select>
-      </Form.Item>
-
-      <Form.Item
-        label="Room"
-        name="Room"
-      >
-          <Select defaultValue="" >
-              <Option value="1">1</Option>
-              <Option value="2">2</Option>
-              <Option value="3">3</Option>
-          </Select>
-      </Form.Item>
-      <Form.Item
-        label="Favourite"
-        name="Favourite"
-      >
-          <Select defaultValue="" >
-              <Option value="1">1</Option>
-              <Option value="2">2</Option>
-              <Option value="3">3</Option>
-          </Select>
-      </Form.Item>
-
-      <Form.Item
-      style={{float:"right", marginRight:"12%"}}
-      >
-        <Button type="primary" htmlType="submit" >
-          Submit
-        </Button>
-      </Form.Item>
-    </Form>
+    <div>
+      <Table
+        rowSelection={{
+          type: selectionType,
+          ...rowSelection,
+        }}
+        pagination={false}
+        columns={columns}
+        dataSource={hours}
+      />
     </div>
   );
 };
-class Book extends Component {
 
-    render() {
+function onPanelChange(value, mode) {
+  console.log(value, mode);
+}
+
+class Booknew extends React.Component {
+  render() {
     return (
     <div>
-        <Navbar/>
-        <Demo/>
-        <img src= {map} style={{width:"62%", height:"62%"}} />
+      <Navbar/>
+
+      <div >
+          <div style={{float:'left'}}>
+            <Selections/>
+              <div style={{ width: 300, border: '1px solid #d9d9d9', borderRadius: 4 ,}}>
+
+                <Calendar
+                fullscreen={false}
+                onPanelChange={onPanelChange}
+                disable date
+                />
+              </div>,
+          </div>
+          <div style={{float:'left'}}>
+            <Demo/>
+          </div>
+      </div>
     </div>
     );
   }
 }
 
-export default withRouter(Book);
+
+export default withRouter(Booknew);
